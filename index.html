@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0a0f1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="ÜretimTakip">
+<link rel="manifest" href="manifest.json">
+<title>Üretim Takip Sistemi</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0f1e; --bg2:#111827; --card:#1a2235; --card2:#1f2d45; --border:#2a3a55;
+  --cyan:#00e5ff; --cyan2:#00b4cc; --green:#00e676; --red:#ff1744;
+  --yellow:#ffd600; --orange:#ff6d00; --blue:#2979ff;
+  --text:#e8f4f8; --muted:#607d8b; --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'Exo 2',sans-serif;color:var(--text);font-size:14px}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
+.screen.active{display:flex}
+
+/* LOGIN */
+#loginScreen{background:linear-gradient(135deg,#0a0f1e,#0d1b2e,#0a0f1e);align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.login-wrap{width:100%;max-width:400px}
+.brand-logo{text-align:center;margin-bottom:28px}
+.brand-logo .ico{font-size:52px;display:block;margin-bottom:8px}
+.brand-logo h1{font-size:26px;font-weight:800;color:var(--cyan);letter-spacing:1px}
+.brand-logo p{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:2px;text-transform:uppercase}
+.role-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:14px}
+.role-card{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px}
+.role-card.sel,.role-card:active{border-color:var(--cyan);background:rgba(0,229,255,.06)}
+.role-card .rico{font-size:26px;flex-shrink:0}
+.role-card .rtitle{font-size:15px;font-weight:700}
+.role-card .rsub{font-size:11px;color:var(--muted);margin-top:1px}
+.role-card.sel .rtitle{color:var(--cyan)}
+.frow{margin-bottom:10px}
+.frow label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.frow input,.frow select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:15px;padding:11px 13px;outline:none;transition:border-color .2s}
+.frow input:focus,.frow select:focus{border-color:var(--cyan)}
+.vard-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.vb{padding:12px;border-radius:10px;border:2px solid var(--border);background:var(--card);cursor:pointer;text-align:center;transition:all .2s}
+.vb.sel{border-color:var(--cyan);background:rgba(0,229,255,.08);color:var(--cyan)}
+.vb .vt{font-weight:700;font-size:14px}
+.vb .vs{font-size:10px;color:var(--muted);margin-top:2px}
+.vb.sel .vs{color:var(--cyan2)}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--cyan),var(--cyan2));border:none;border-radius:12px;color:#0a0f1e;font-family:'Exo 2',sans-serif;font-weight:800;font-size:16px;cursor:pointer;letter-spacing:1px}
+.login-btn:active{opacity:.8}
+
+/* TOPBAR */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tb-left .app{font-size:15px;font-weight:800;color:var(--cyan)}
+.tb-left .who{font-size:11px;color:var(--muted);margin-top:1px}
+.tb-right{display:flex;gap:7px;align-items:center}
+.vbadge{background:rgba(0,229,255,.1);border:1px solid var(--cyan);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--cyan);font-weight:600}
+.rbadge{border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700}
+.rbadge.op{background:rgba(255,109,0,.15);border:1px solid var(--orange);color:var(--orange)}
+.rbadge.kk{background:rgba(0,230,118,.15);border:1px solid var(--green);color:var(--green)}
+.rbadge.yt{background:rgba(41,121,255,.15);border:1px solid var(--blue);color:#82b1ff}
+.logout-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 9px;color:var(--muted);font-size:11px;cursor:pointer;font-family:'Exo 2',sans-serif}
+
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:10px 15px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'Exo 2',sans-serif;font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:12px;padding-bottom:20px}
+.tpage{display:none}
+.tpage.active{display:block;animation:fu .2s ease}
+@keyframes fu{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.ch{font-size:14px;font-weight:700;color:var(--cyan);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+
+/* FORM ELEMENTS */
+input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:14px;padding:10px 12px;outline:none;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan)}
+textarea{resize:vertical;min-height:60px}
+select option{background:var(--card)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.fl{margin-bottom:10px}
+.fl label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+
+/* BUTTONS */
+.btn{width:100%;padding:12px;border-radius:9px;border:none;font-family:'Exo 2',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:transform .15s,opacity .15s}
+.btn:active{transform:scale(.97);opacity:.85}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),var(--cyan2));color:#0a0f1e}
+.btn-green{background:var(--green);color:#0a0f1e}
+.btn-red{background:var(--red);color:#fff;margin-top:8px}
+.btn-sm{width:auto;padding:7px 13px;font-size:12px;margin:0}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:600}
+.bg{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.3)}
+.br{background:rgba(255,23,68,.12);color:var(--red);border:1px solid rgba(255,23,68,.3)}
+.by{background:rgba(255,214,0,.12);color:var(--yellow);border:1px solid rgba(255,214,0,.3)}
+.bc{background:rgba(0,229,255,.12);color:var(--cyan);border:1px solid rgba(0,229,255,.3)}
+.bo{background:rgba(255,109,0,.12);color:var(--orange);border:1px solid rgba(255,109,0,.3)}
+
+/* STATS */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px}
+.sval{font-size:26px;font-weight:800}
+.slbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ÖLÇÜM TABLOSU */
+.otable{width:100%;border-collapse:collapse;font-size:12px}
+.otable th{background:var(--bg2);color:var(--muted);padding:7px 5px;text-align:center;font-size:10px;font-weight:600;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.otable td{padding:3px 3px;border-bottom:1px solid rgba(42,58,85,.4);text-align:center;vertical-align:middle}
+.otable td input{background:transparent;border:none;color:var(--text);font-size:12px;width:100%;text-align:center;padding:4px 2px;font-family:'JetBrains Mono',monospace}
+.otable td input:focus{background:var(--bg2);border-radius:4px;outline:1px solid var(--cyan)}
+.ok-cell{color:var(--green);font-weight:700}
+.nok-cell{color:var(--red);font-weight:700}
+
+/* SAATLİK */
+.hourly-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.hrow{background:var(--card2);border-radius:8px;padding:8px 10px;border:1px solid var(--border)}
+.htime{font-size:10px;color:var(--muted);margin-bottom:4px;font-family:'JetBrains Mono',monospace}
+.hrow input{background:transparent;border:none;color:var(--text);font-size:14px;font-weight:700;width:100%;text-align:center;padding:0;font-family:'JetBrains Mono',monospace}
+
+/* MAKİNE KARTLARI */
+.machine-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.mcard{border-radius:10px;padding:12px;border:2px solid var(--border);background:var(--card);transition:all .3s}
+.mcard.ok{border-color:var(--green);background:rgba(0,230,118,.05)}
+.mcard.nok{border-color:var(--red);background:rgba(255,23,68,.05)}
+.mcard.warn{border-color:var(--yellow);background:rgba(255,214,0,.05)}
+.mcard.idle{opacity:.5}
+.mcard .mno{font-size:10px;color:var(--muted);margin-bottom:3px}
+.mcard .mprod{font-size:13px;font-weight:700}
+.mcard .mst{font-size:10px;margin-top:4px;font-weight:600}
+.mcard.ok .mst{color:var(--green)}
+.mcard.nok .mst{color:var(--red)}
+.mcard.warn .mst{color:var(--yellow)}
+
+/* BİLDİRİMLER */
+.notif{border-radius:9px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:flex-start;gap:9px;border:1px solid}
+.notif.green{background:rgba(0,230,118,.07);border-color:rgba(0,230,118,.25)}
+.notif.yellow{background:rgba(255,214,0,.07);border-color:rgba(255,214,0,.25)}
+.notif.red{background:rgba(255,23,68,.07);border-color:rgba(255,23,68,.25)}
+.notif .ni{font-size:16px;flex-shrink:0}
+.notif .nm{font-size:12px;flex:1;line-height:1.4}
+.notif .nt{font-size:10px;color:var(--muted);margin-top:3px}
+
+/* DURUŞ */
+.durus-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+.db{padding:7px 11px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--muted);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600;transition:all .2s}
+.db.sel{border-color:var(--orange);background:rgba(255,109,0,.12);color:var(--orange)}
+
+/* PROGRESS */
+.prog{background:var(--bg2);border-radius:20px;height:8px;overflow:hidden;margin-top:6px}
+.prog-fill{height:100%;border-radius:20px;transition:width .5s}
+
+/* REC */
+.rec{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:11px;margin-bottom:7px}
+.rec-head{display:flex;justify-content:space-between;align-items:flex-start}
+.rec-title{font-weight:600;font-size:13px}
+.rec-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.rec-acts{display:flex;gap:6px;margin-top:8px}
+.rbtn{padding:5px 11px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:11px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600}
+.rbtn.del{border-color:rgba(255,23,68,.4);color:var(--red)}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+.toast.warn{border-color:var(--yellow);color:var(--yellow)}
+
+/* MODAL */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;padding:16px}
+.mbg.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;width:100%;max-width:400px}
+.modal-title{font-size:16px;font-weight:700;color:var(--cyan);margin-bottom:12px}
+.modal-acts{display:flex;gap:8px;margin-top:14px}
+.modal-acts .btn{margin:0}
+
+/* EMPTY */
+.empty{text-align:center;padding:32px 20px;color:var(--muted)}
+.eico{font-size:38px;margin-bottom:8px}
+
+/* SEVK */
+.sevk-row{background:var(--card2);border-radius:9px;padding:12px;margin-bottom:8px;border:1px solid var(--border)}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div class="screen active" id="loginScreen">
+ <div class="login-wrap">
+  <div class="brand-logo">
+   <span class="ico">🏭</span>
+   <h1>ÜRETİM TAKİP</h1>
+   <p>Plastik Enjeksiyon Kalite Sistemi</p>
+  </div>
+  <div class="frow"><label>Ad Soyad</label><input id="loginName" type="text" placeholder="Adınızı girin"></div>
+  <div class="frow"><label>Rol Seçin</label></div>
+  <div class="role-grid">
+   <div class="role-card" onclick="selRole('operator',this)"><span class="rico">👷</span><div><div class="rtitle">Operatör</div><div class="rsub">Üretim & ölçüm girişi</div></div></div>
+   <div class="role-card" onclick="selRole('kk',this)"><span class="rico">🔍</span><div><div class="rtitle">Kalite Kontrol</div><div class="rsub">İzleme & bildirimler</div></div></div>
+   <div class="role-card" onclick="selRole('yonetim',this)"><span class="rico">📊</span><div><div class="rtitle">Yönetim</div><div class="rsub">Raporlar & sevkiyat</div></div></div>
+  </div>
+  <div class="frow"><label>Vardiya</label></div>
+  <div class="vard-row">
+   <div class="vb" id="vb1" onclick="selVard(1)"><div class="vt">🌅 Gündüz</div><div class="vs">07:00–19:00</div></div>
+   <div class="vb" id="vb2" onclick="selVard(2)"><div class="vt">🌙 Gece</div><div class="vs">19:00–07:00</div></div>
+  </div>
+  <button class="login-btn" onclick="doLogin()">GİRİŞ YAP →</button>
+ </div>
+</div>
+
+<!-- ==================== OPERATÖR ==================== -->
+<div class="screen" id="opScreen">
+ <div class="topbar">
+  <div class="tb-left"><div class="app">🏭 ÜRETİM TAKİP</div><div class="who" id="op-who"></div></div>
+  <div class="tb-right"><span class="rbadge op">OPERATÖR</span><span class="vbadge" id="op-vard"></span><button class="logout-btn" onclick="doLogout()">Çıkış</button></div>
+ </div>
+ <div class="tabs">
+  <button class="tab active" onclick="goTab('op','giris',this)">📝 Veri Girişi</button>
+  <button class="tab" onclick="goTab('op','olcum',this)">📐 Ölçümler</button>
+  <button class="tab" onclick="goTab('op','uretim',this)">⏱ Saatlik</button>
+  <button class="tab" onclick="goTab('op','kayit',this)">📋 Kayıtlar</button>
+ </div>
+ <div class="content">
+
+  <!-- VERİ GİRİŞİ -->
+  <div class="tpage active" id="op-giris">
+   <div class="card">
+    <div class="ch">📝 Üretim Bilgileri</div>
+    <div class="g2">
+     <div class="fl"><label>Firma Adı</label><input id="op-firma" type="text" placeholder="Firma adı"></div>
+     <div class="fl"><label>Parça Kodu</label><input id="op-parca" type="text" placeholder="PRC-001"></div>
+    </div>
+    <div class="g2">
+     <div class="fl"><label>Operasyon No</label><input id="op-opno" type="text" placeholder="OP-01"></div>
+     <div class="fl"><label>İş Emri No</label><input id="op-iemri" type="text" placeholder="IE-001"></div>
+    </div>
+    <div class="g2">
+     <div class="fl"><label>Makine No</label>
+      <select id="op-mak"><option value="">Seç...</option><option>Makine 1</option><option>Makine 2</option><option>Makine 3</option><option>Makine 4</option><option>Makine 5</option><option>Makine 6</option><option>Makine 7</option><option>Makine 8</option><option>Makine 9</option><option>Makine 10</option></select>
+     </div>
+     <div class="fl"><label>Operatör</label><input id="op-opname" type="text" readonly style="opacity:.6"></div>
+    </div>
+    <div class="fl"><label>Duruş Nedeni</label>
+     <div class="durus-row" id="durusRow">
+      <button class="db" onclick="selDurus('Yok',this)">✅ Yok</button>
+      <button class="db" onclick="selDurus('Arıza',this)">🔧 Arıza</button>
+      <button class="db" onclick="selDurus('Malzeme Yok',this)">📦 Malzeme</button>
+      <button class="db" onclick="selDurus('Kalıp Değişimi',this)">🔄 Kalıp</button>
+      <button class="db" onclick="selDurus('Mola',this)">☕ Mola</button>
+      <button class="db" onclick="selDurus('Diğer',this)">📝 Diğer</button>
+     </div>
+    </div>
+    <div class="fl"><label>Açıklama</label><textarea id="op-aciklama" placeholder="Ek bilgi..."></textarea></div>
+    <button class="btn btn-cyan" onclick="saveGiris()">KAYDET</button>
+   </div>
+  </div>
+
+  <!-- ÖLÇÜM -->
+  <div class="tpage" id="op-olcum">
+   <div class="card">
+    <div class="ch">📐 Ölçüm Tablosu</div>
+    <div class="g2">
+     <div class="fl"><label>Parça Kodu</label><input id="olc-parca" type="text" placeholder="PRC-001"></div>
+     <div class="fl"><label>Ölçüm Aleti Seri No</label><input id="olc-seri" type="text" placeholder="SN-001" oninput="checkKalib(this)"></div>
+    </div>
+    <div id="kalib-st" style="margin-bottom:8px;font-size:12px"></div>
+    <div style="overflow-x:auto">
+     <table class="otable">
+      <thead><tr><th>No</th><th>Ölçü Adı</th><th>Nominal</th><th>Min</th><th>Max</th><th>Ölçülen</th><th>Sonuç</th><th></th></tr></thead>
+      <tbody id="olcumBody"></tbody>
+     </table>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+     <input id="yeni-olcum" type="text" placeholder="Ölçü adı..." style="flex:1">
+     <button class="btn btn-sm btn-cyan" onclick="addOlcum()">+ Ekle</button>
+    </div>
+    <button class="btn btn-cyan" style="margin-top:12px" onclick="saveOlcum()">ÖLÇÜM KAYDET</button>
+   </div>
+   <div class="card">
+    <div class="ch">📋 Ölçüm Geçmişi</div>
+    <div id="olcum-gecmis"><div class="empty"><div class="eico">📐</div>Kayıt yok</div></div>
+   </div>
+  </div>
+
+  <!-- SAATLİK ÜRETİM -->
+  <div class="tpage" id="op-uretim">
+   <div class="card">
+    <div class="ch">⏱ Saatlik Üretim Girişi</div>
+    <div class="g2">
+     <div class="fl"><label>Makine No</label>
+      <select id="ur-mak"><option value="">Seç...</option><option>Makine 1</option><option>Makine 2</option><option>Makine 3</option><option>Makine 4</option><option>Makine 5</option><option>Makine 6</option><option>Makine 7</option><option>Makine 8</option><option>Makine 9</option><option>Makine 10</option></select>
+     </div>
+     <div class="fl"><label>Parça Kodu</label><input id="ur-parca" type="text" placeholder="PRC-001"></div>
+    </div>
+    <div class="fl"><label>Saatlik Hedef (adet)</label><input id="ur-hedef" type="number" placeholder="0"></div>
+    <div class="fl"><label>Saatlik Üretim Adetleri</label>
+     <div class="hourly-grid" id="hourlyGrid"></div>
+    </div>
+    <div class="fl"><label>Fire / Hatalı Adet</label><input id="ur-fire" type="number" placeholder="0"></div>
+    <button class="btn btn-cyan" onclick="saveUretim()">ÜRETİM KAYDET</button>
+   </div>
+   <div class="card">
+    <div class="ch">📊 Bugünkü Özet</div>
+    <div id="uretim-ozet"><div class="empty"><div class="eico">⏱</div>Veri yok</div></div>
+   </div>
+  </div>
+
+  <!-- KAYITLAR -->
+  <div class="tpage" id="op-kayit">
+   <div class="card">
+    <div class="ch">📋 Tüm Kayıtlarım</div>
+    <div id="op-all-list"><div class="empty"><div class="eico">📋</div>Kayıt yok</div></div>
+   </div>
+  </div>
+
+ </div>
+</div>
+
+<!-- ==================== KALİTE KONTROL ==================== -->
+<div class="screen" id="kkScreen">
+ <div class="topbar">
+  <div class="tb-left"><div class="app">🏭 ÜRETİM TAKİP</div><div class="who" id="kk-who"></div></div>
+  <div class="tb-right"><span class="rbadge kk">KALİTE KONTROL</span><span class="vbadge" id="kk-vard"></span><button class="logout-btn" onclick="doLogout()">Çıkış</button></div>
+ </div>
+ <div class="tabs">
+  <button class="tab active" onclick="goTab('kk','izle',this)">🖥 İzleme</button>
+  <button class="tab" onclick="goTab('kk','bildirim',this)">🔔 Bildirimler</button>
+  <button class="tab" onclick="goTab('kk','olcumler',this)">📐 Ölçümler</button>
+  <button class="tab" onclick="goTab('kk','hata',this)">🐛 Hata Kaydı</button>
+ </div>
+ <div class="content">
+
+  <!-- İZLEME -->
+  <div class="tpage active" id="kk-izle">
+   <div class="card">
+    <div class="ch">🖥 Makine Durumu</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:11px">
+     <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);margin-right:4px"></span>Ölçüm OK</span>
+     <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);margin-right:4px"></span>NOK / Bekliyor</span>
+     <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--yellow);margin-right:4px"></span>Gecikme</span>
+    </div>
+    <div class="machine-grid" id="machineGrid"></div>
+    <button class="btn btn-outline" onclick="refreshMachines()">🔄 Yenile</button>
+   </div>
+  </div>
+
+  <!-- BİLDİRİMLER -->
+  <div class="tpage" id="kk-bildirim">
+   <div class="card">
+    <div class="ch">🔔 Anlık Bildirimler</div>
+    <div id="notif-list"><div class="empty"><div class="eico">🔔</div>Bildirim yok</div></div>
+   </div>
+  </div>
+
+  <!-- ÖLÇÜMLER -->
+  <div class="tpage" id="kk-olcumler">
+   <div class="card">
+    <div class="ch">📐 Tüm Ölçüm Kayıtları</div>
+    <div id="kk-olcum-list"><div class="empty"><div class="eico">📐</div>Kayıt yok</div></div>
+   </div>
+  </div>
+
+  <!-- HATA KAYDI -->
+  <div class="tpage" id="kk-hata">
+   <div class="card">
+    <div class="ch">🐛 Hata Kaydı</div>
+    <div class="g2">
+     <div class="fl"><label>Ürün / Parti</label><input id="h-urun" type="text" placeholder="Ürün"></div>
+     <div class="fl"><label>Makine</label>
+      <select id="h-mak"><option value="">Seç...</option><option>Makine 1</option><option>Makine 2</option><option>Makine 3</option><option>Makine 4</option><option>Makine 5</option><option>Makine 6</option><option>Makine 7</option><option>Makine 8</option><option>Makine 9</option><option>Makine 10</option></select>
+     </div>
+    </div>
+    <div class="fl"><label>Hata Tipi</label>
+     <select id="h-tip"><option value="">Seçiniz...</option><option>Çöküntü (Sink Mark)</option><option>Yanma İzi</option><option>Kaynak Çizgisi</option><option>Hava Kabarcığı</option><option>Eksik Dolum</option><option>Çapak</option><option>Renk Hatası</option><option>Boyut Dışı</option><option>Diğer</option></select>
+    </div>
+    <div class="g2">
+     <div class="fl"><label>Hatalı Adet</label><input id="h-adet" type="number" placeholder="0"></div>
+     <div class="fl"><label>Şiddet</label>
+      <select id="h-sev"><option value="Düşük">🟢 Düşük</option><option value="Orta">🟡 Orta</option><option value="Yüksek">🟠 Yüksek</option><option value="Kritik">🔴 Kritik</option></select>
+     </div>
+    </div>
+    <div class="fl"><label>Kök Neden</label><textarea id="h-neden" placeholder="Nedenler..."></textarea></div>
+    <div class="fl"><label>Düzeltici Faaliyet</label><textarea id="h-onlem" placeholder="Yapılanlar..."></textarea></div>
+    <div class="fl"><label>Durum</label>
+     <select id="h-durum"><option value="Açık">🔴 Açık</option><option value="Devam Ediyor">🟡 Devam Ediyor</option><option value="Kapalı">🟢 Kapalı</option></select>
+    </div>
+    <div class="fl"><label>📷 Hata Fotoğrafı</label>
+     <div style="border:2px dashed var(--border);border-radius:9px;padding:14px;text-align:center;position:relative;cursor:pointer">
+      <input type="file" accept="image/*" capture="environment" multiple onchange="handlePhoto(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+      <div style="font-size:26px">📷</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Kamera veya galeri</div>
+     </div>
+     <div id="hata-photos" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
+    </div>
+    <button class="btn btn-cyan" onclick="saveHata()">HATA KAYDET</button>
+   </div>
+   <div class="card">
+    <div class="ch">📋 Hata Listesi</div>
+    <div id="hata-list"><div class="empty"><div class="eico">🐛</div>Kayıt yok</div></div>
+   </div>
+  </div>
+
+ </div>
+</div>
+
+<!-- ==================== YÖNETİM ==================== -->
+<div class="screen" id="ytScreen">
+ <div class="topbar">
+  <div class="tb-left"><div class="app">🏭 ÜRETİM TAKİP</div><div class="who" id="yt-who"></div></div>
+  <div class="tb-right"><span class="rbadge yt">YÖNETİM</span><span class="vbadge" id="yt-vard"></span><button class="logout-btn" onclick="doLogout()">Çıkış</button></div>
+ </div>
+ <div class="tabs">
+  <button class="tab active" onclick="goTab('yt','ozet',this)">📊 Özet</button>
+  <button class="tab" onclick="goTab('yt','sevkiyat',this)">🚚 Sevkiyat</button>
+  <button class="tab" onclick="goTab('yt','sorunlu',this)">⚠️ Sorunlu</button>
+  <button class="tab" onclick="goTab('yt','rapor',this)">📄 Rapor</button>
+ </div>
+ <div class="content">
+
+  <!-- ÖZET -->
+  <div class="tpage active" id="yt-ozet">
+   <div class="sgrid">
+    <div class="scard" style="border-left:3px solid var(--cyan)"><div class="sval" id="yt-total">0</div><div class="slbl">Toplam Üretim</div></div>
+    <div class="scard" style="border-left:3px solid var(--red)"><div class="sval" id="yt-fire">0</div><div class="slbl">Toplam Fire</div></div>
+    <div class="scard" style="border-left:3px solid var(--green)"><div class="sval" id="yt-verim">—</div><div class="slbl">Verimlilik</div></div>
+    <div class="scard" style="border-left:3px solid var(--orange)"><div class="sval" id="yt-hata-count">0</div><div class="slbl">Açık Hata</div></div>
+   </div>
+   <div class="card">
+    <div class="ch">⏱ Saatlik Hedef vs Gerçekleşen</div>
+    <div id="yt-chart"></div>
+   </div>
+   <div class="card">
+    <div class="ch">🏭 Makine Bazlı Üretim</div>
+    <div id="yt-mak-prod"></div>
+   </div>
+  </div>
+
+  <!-- SEVKİYAT -->
+  <div class="tpage" id="yt-sevkiyat">
+   <div class="card">
+    <div class="ch">🚚 Yeni Sevkiyat Planı</div>
+    <div class="g2">
+     <div class="fl"><label>Ürün Kodu</label><input id="sv-urun" type="text" placeholder="PRD-001"></div>
+     <div class="fl"><label>Firma Adı</label><input id="sv-firma" type="text" placeholder="Firma"></div>
+    </div>
+    <div class="g2">
+     <div class="fl"><label>Planlanan Tarih</label><input id="sv-tarih" type="date"></div>
+     <div class="fl"><label>Planlanan Adet</label><input id="sv-adet" type="number" placeholder="0" oninput="calcSevk()"></div>
+    </div>
+    <div class="fl"><label>Mevcut Üretim (adet)</label><input id="sv-mevcut" type="number" placeholder="0" oninput="calcSevk()"></div>
+    <div id="sv-prog-wrap" style="display:none;margin-bottom:10px">
+     <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>İlerleme</span><span id="sv-pct" style="color:var(--cyan);font-weight:700"></span></div>
+     <div class="prog"><div class="prog-fill" id="sv-prog" style="background:var(--cyan)"></div></div>
+    </div>
+    <div class="fl"><label>Durum</label>
+     <select id="sv-durum"><option value="Aktif">🟢 Aktif</option><option value="Beklemede">🟡 Beklemede</option><option value="Tamamlandı">✅ Tamamlandı</option><option value="İptal">❌ İptal</option></select>
+    </div>
+    <button class="btn btn-cyan" onclick="saveSevk()">EKLE</button>
+   </div>
+   <div class="card">
+    <div class="ch">📋 Sevkiyat Planları</div>
+    <div id="sevk-list"><div class="empty"><div class="eico">🚚</div>Sevkiyat yok</div></div>
+   </div>
+  </div>
+
+  <!-- SORUNLU -->
+  <div class="tpage" id="yt-sorunlu">
+   <div class="card"><div class="ch">⚠️ Duruşlar</div><div id="sorunlu-list"><div class="empty"><div class="eico">✅</div>Duruş yok</div></div></div>
+   <div class="card"><div class="ch">🐛 Açık Hatalar</div><div id="yt-hata-list"><div class="empty"><div class="eico">✅</div>Açık hata yok</div></div></div>
+  </div>
+
+  <!-- RAPOR -->
+  <div class="tpage" id="yt-rapor">
+   <div class="card">
+    <div class="ch">📄 CSV Dışa Aktar</div>
+    <button class="btn btn-green" onclick="exportCSV('uretim')">⏱ Üretim Raporu</button>
+    <button class="btn btn-green" style="margin-top:8px" onclick="exportCSV('olcumler')">📐 Ölçüm Raporu</button>
+    <button class="btn btn-green" style="margin-top:8px" onclick="exportCSV('hatalar')">🐛 Hata Raporu</button>
+    <button class="btn btn-green" style="margin-top:8px" onclick="exportCSV('sevkiyat')">🚚 Sevkiyat Raporu</button>
+    <button class="btn btn-red" onclick="clearAll()">🗑️ Tüm Verileri Temizle</button>
+   </div>
+  </div>
+
+ </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="mbg" id="delModal">
+ <div class="modal">
+  <div class="modal-title">🗑️ Kaydı Sil</div>
+  <p style="color:var(--muted);font-size:13px">Bu kayıt kalıcı olarak silinecek. Emin misiniz?</p>
+  <div class="modal-acts">
+   <button class="btn btn-red" onclick="confirmDel()" style="margin:0">Evet, Sil</button>
+   <button class="btn btn-outline" onclick="document.getElementById('delModal').classList.remove('show')" style="margin:0">İptal</button>
+  </div>
+ </div>
+</div>
+
+<script>
+// ============ CONSTANTS ============
+const SLOTS_G=['07:00-08:00','08:00-09:00','09:00-10:00','10:00-11:00','11:00-12:00','12:00-13:00','13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00','17:00-18:00','18:00-19:00'];
+const SLOTS_N=['19:00-20:00','20:00-21:00','21:00-22:00','22:00-23:00','23:00-00:00','00:00-01:00','01:00-02:00','02:00-03:00','03:00-04:00','04:00-05:00','05:00-06:00','06:00-07:00'];
+
+// ============ STATE ============
+let CUR={name:'',role:'',vardiya:'',vLabel:''};
+let _role='',_vard=0,_durus='',_hataPhotos=[];
+let _delType='',_delId=null,_olcNo=0;
+
+// ============ DB ============
+const DB={
+  get:k=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return[]}},
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+  push(k,v){const a=this.get(k);a.push(v);this.set(k,a)},
+  del(k,id){this.set(k,this.get(k).filter(r=>r.id!==id))}
+};
+
+// ============ LOGIN ============
+function selRole(role,el){
+  _role=role;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function selVard(n){
+  _vard=n;
+  document.getElementById('vb1').classList.toggle('sel',n===1);
+  document.getElementById('vb2').classList.toggle('sel',n===2);
+}
+function doLogin(){
+  const name=document.getElementById('loginName').value.trim();
+  if(!name){toast('Adınızı girin!','err');return;}
+  if(!_role){toast('Rol seçin!','err');return;}
+  if(!_vard){toast('Vardiya seçin!','err');return;}
+  CUR={name,role:_role,vardiya:_vard===1?'07:00-19:00':'19:00-07:00',vLabel:_vard===1?'🌅 Gündüz':'🌙 Gece'};
+  document.getElementById('loginScreen').classList.remove('active');
+  if(_role==='operator'){
+    document.getElementById('opScreen').classList.add('active');
+    document.getElementById('op-who').textContent=name;
+    document.getElementById('op-vard').textContent=CUR.vLabel;
+    document.getElementById('op-opname').value=name;
+    buildHourly();renderOpAll();
+  } else if(_role==='kk'){
+    document.getElementById('kkScreen').classList.add('active');
+    document.getElementById('kk-who').textContent=name;
+    document.getElementById('kk-vard').textContent=CUR.vLabel;
+    refreshMachines();renderKkOlcumler();renderHataList();renderNotifs();
+  } else {
+    document.getElementById('ytScreen').classList.add('active');
+    document.getElementById('yt-who').textContent=name;
+    document.getElementById('yt-vard').textContent=CUR.vLabel;
+    document.getElementById('sv-tarih').value=today();
+    ytOzet();renderSevkList();renderSorunlu();
+  }
+}
+function doLogout(){
+  if(!confirm('Çıkmak istiyor musunuz?'))return;
+  ['opScreen','kkScreen','ytScreen'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById('loginScreen').classList.add('active');
+  _role='';_vard=0;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('vb1').classList.remove('sel');
+  document.getElementById('vb2').classList.remove('sel');
+  document.getElementById('loginName').value='';
+}
+
+// ============ TABS ============
+function goTab(sc,id,btn){
+  document.querySelectorAll('#'+sc+'Screen .tpage').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#'+sc+'Screen .tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(sc+'-'+id).classList.add('active');
+  btn.classList.add('active');
+  const map={izle:refreshMachines,bildirim:renderNotifs,olcumler:renderKkOlcumler,kayit:renderOpAll,ozet:ytOzet,sorunlu:renderSorunlu};
+  if(map[id])map[id]();
+}
+
+// ============ OPERATOR - VERİ GİRİŞİ ============
+function selDurus(v,btn){
+  _durus=v;
+  document.querySelectorAll('.db').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function saveGiris(){
+  const firma=document.getElementById('op-firma').value.trim();
+  const mak=document.getElementById('op-mak').value;
+  if(!firma){toast('Firma adı gerekli!','err');return;}
+  if(!mak){toast('Makine seçin!','err');return;}
+  DB.push('giris',{id:Date.now(),tarih:now(),kullanici:CUR.name,vardiya:CUR.vardiya,
+    firma,parca:v('op-parca'),opno:v('op-opno'),iemri:v('op-iemri'),
+    makine:mak,durus:_durus||'Yok',aciklama:v('op-aciklama')});
+  if(_durus&&_durus!=='Yok')addNotif('yellow',`⚠️ ${mak} duruş: ${_durus}`,now());
+  clr(['op-firma','op-parca','op-opno','op-iemri','op-aciklama']);
+  document.getElementById('op-mak').value='';
+  _durus='';document.querySelectorAll('.db').forEach(b=>b.classList.remove('sel'));
+  renderOpAll();toast('✅ Kaydedildi');
+}
+function renderOpAll(){
+  const data=DB.get('giris').filter(r=>r.kullanici===CUR.name).reverse();
+  const el=document.getElementById('op-all-list');
+  if(!data.length){el.innerHTML='<div class="empty"><div class="eico">📋</div>Kayıt yok</div>';return;}
+  el.innerHTML=data.slice(0,20).map(r=>`
+    <div class="rec"><div class="rec-head">
+      <div><div class="rec-title">${r.firma} — ${r.makine}</div>
+        <div class="rec-sub">${r.parca||''} | Duruş: ${r.durus} | ${r.tarih}</div></div>
+      <span class="badge ${r.durus==='Yok'?'bg':'bo'}">${r.durus}</span>
+    </div>
+    <div class="rec-acts"><button class="rbtn del" onclick="askDel('giris',${r.id})">🗑 Sil</button></div>
+    </div>`).join('');
+}
+
+// ============ ÖLÇÜM ============
+function addOlcum(){
+  const ad=document.getElementById('yeni-olcum').value.trim();
+  if(!ad){toast('Ölçü adı girin!','err');return;}
+  _olcNo++;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="color:var(--muted);font-size:10px">${_olcNo}</td>
+    <td><input type="text" value="${ad}" style="text-align:left"></td>
+    <td><input type="number" step="0.001" placeholder="0.000"></td>
+    <td><input type="number" step="0.001" placeholder="min"></td>
+    <td><input type="number" step="0.001" placeholder="max"></td>
+    <td><input type="number" step="0.001" placeholder="gir..." oninput="chkRow(this)"></td>
+    <td class="sr">—</td>
+    <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;color:var(--red);font-size:15px;cursor:pointer">✕</button></td>`;
+  document.getElementById('olcumBody').appendChild(tr);
+  document.getElementById('yeni-olcum').value='';
+}
+function chkRow(inp){
+  const tr=inp.closest('tr');
+  const ins=tr.querySelectorAll('input[type=number]');
+  const nom=parseFloat(ins[0].value),mn=parseFloat(ins[1].value),mx=parseFloat(ins[2].value),olc=parseFloat(ins[3].value);
+  const cell=tr.querySelector('.sr');
+  if(isNaN(olc)||isNaN(mn)||isNaN(mx)){cell.textContent='—';cell.className='sr';return;}
+  const ok=olc>=mn&&olc<=mx;
+  cell.textContent=ok?'✅ OK':'❌ NOK';
+  cell.className='sr '+(ok?'ok-cell':'nok-cell');
+}
+function checkKalib(inp){
+  const seri=inp.value.trim();
+  const el=document.getElementById('kalib-st');
+  if(!seri){el.innerHTML='';return;}
+  const kal=DB.get('kalibrasyon').find(k=>k.seri===seri);
+  if(kal){
+    const expired=new Date(kal.bitis)<new Date();
+    el.innerHTML=`<span style="color:${expired?'var(--red)':'var(--green)'};font-size:11px">${expired?'❌ Kalibrasyon süresi dolmuş! ('+kal.bitis+')':'✅ Kalibrasyon geçerli ('+kal.bitis+')'}</span>`;
+  } else {
+    el.innerHTML=`<span style="color:var(--muted);font-size:11px">⚠️ Seri no kayıtlı değil</span>`;
+  }
+}
+function getOlcRows(){
+  return Array.from(document.querySelectorAll('#olcumBody tr')).map(tr=>{
+    const ins=tr.querySelectorAll('input');
+    return{ad:ins[0]?.value||'',nominal:ins[1]?.value||'',min:ins[2]?.value||'',max:ins[3]?.value||'',olculen:ins[4]?.value||'',sonuc:tr.querySelector('.sr')?.textContent||'—'};
+  });
+}
+function saveOlcum(){
+  const parca=document.getElementById('olc-parca').value.trim();
+  if(!parca){toast('Parça kodu girin!','err');return;}
+  const rows=getOlcRows();
+  if(!rows.length){toast('En az 1 ölçüm girin!','err');return;}
+  const nok=rows.filter(r=>r.sonuc.includes('NOK')).length;
+  DB.push('olcumler',{id:Date.now(),tarih:now(),kullanici:CUR.name,vardiya:CUR.vardiya,parca,seri:v('olc-seri'),olcumler:rows,nokCount:nok});
+  document.getElementById('olcumBody').innerHTML='';
+  clr(['olc-parca','olc-seri']);
+  document.getElementById('kalib-st').innerHTML='';
+  _olcNo=0;
+  if(nok>0){addNotif('red',`❌ NOK: ${parca} — ${nok} ölçüm tolerans dışı!`,now());toast(`⚠️ ${nok} ölçüm NOK!`,'warn');}
+  else{addNotif('green',`✅ ${parca} — Tüm ölçümler OK`,now());toast('✅ Ölçüm kaydedildi');}
+  renderOlcGecmis();renderKkOlcumler();
+}
+function renderOlcGecmis(){
+  const data=DB.get('olcumler').reverse();
+  const el=document.getElementById('olcum-gecmis');
+  if(!data.length){el.innerHTML='<div class="empty"><div class="eico">📐</div>Kayıt yok</div>';return;}
+  el.innerHTML=data.slice(0,10).map(r=>`
+    <div class="rec"><div class="rec-head">
+      <div><div class="rec-title">${r.parca} — ${r.olcumler.length} ölçüm</div>
+        <div class="rec-sub">${r.kullanici} | ${r.tarih}</div></div>
+      <span class="badge ${r.nokCount>0?'br':'bg'}">${r.nokCount>0?r.nokCount+' NOK':'OK'}</span>
+    </div>
+    <div class="rec-acts"><button class="rbtn del" onclick="askDel('olcumler',${r.id})">🗑 Sil</button></div>
+    </div>`).join('');
+}
+
+// ============ SAATLİK ÜRETİM ============
+function buildHourly(){
+  const slots=_vard===1?SLOTS_G:SLOTS_N;
+  document.getElementById('hourlyGrid').innerHTML=slots.map(s=>`
+    <div class="hrow"><div class="htime">${s}</div>
+      <input type="number" placeholder="0" data-slot="${s}" min="0"></div>`).join('');
+}
+function saveUretim(){
+  const mak=document.getElementById('ur-mak').value;
+  if(!mak){toast('Makine seçin!','err');return;}
+  const hedef=parseInt(document.getElementById('ur-hedef').value)||0;
+  const fire=parseInt(document.getElementById('ur-fire').value)||0;
+  const hourly={};
+  document.querySelectorAll('#hourlyGrid input').forEach(inp=>{hourly[inp.dataset.slot]=parseInt(inp.value)||0;});
+  const toplam=Object.values(hourly).reduce((a,b)=>a+b,0);
+  DB.push('uretim',{id:Date.now(),tarih:now(),gun:today(),kullanici:CUR.name,vardiya:CUR.vardiya,makine:mak,parca:v('ur-parca'),hedef,toplam,fire,hourly});
+  document.getElementById('ur-mak').value='';
+  document.getElementById('ur-hedef').value='';
+  document.getElementById('ur-fire').value='';
+  buildHourly();
+  if(hedef>0&&toplam<hedef*0.8)addNotif('yellow',`⚠️ ${mak}: Hedefin %${Math.round(toplam/hedef*100)}'inde (${toplam}/${hedef})`,now());
+  renderUretimOzet();ytOzet();toast('✅ Üretim kaydedildi');
+}
+function renderUretimOzet(){
+  const data=DB.get('uretim').filter(r=>r.gun===today()&&r.kullanici===CUR.name).reverse();
+  const el=document.getElementById('uretim-ozet');
+  if(!data.length){el.innerHTML='<div class="empty"><div class="eico">⏱</div>Bugün veri yok</div>';return;}
+  el.innerHTML=data.map(r=>{
+    const pct=r.hedef>0?Math.min(100,Math.round(r.toplam/r.hedef*100)):0;
+    return`<div class="rec" style="margin-bottom:7px"><div class="rec-head">
+      <div><div class="rec-title">${r.makine} ${r.parca?'— '+r.parca:''}</div>
+        <div class="rec-sub">Toplam: ${r.toplam} | Fire: ${r.fire} | Hedef: ${r.hedef}</div></div>
+      <span class="badge ${pct>=90?'bg':pct>=70?'by':'br'}">${r.hedef>0?pct+'%':'—'}</span>
+    </div>${r.hedef>0?`<div class="prog" style="margin-top:7px"><div class="prog-fill" style="width:${pct}%;background:${pct>=90?'var(--green)':pct>=70?'var(--yellow)':'var(--red)'}"></div></div>`:''}
+    </div>`;}).join('');
+}
+
+// ============ KALİTE KONTROL - MAKİNELER ============
+function refreshMachines(){
+  const grid=document.getElementById('machineGrid');
+  const uretim=DB.get('uretim').filter(r=>r.gun===today());
+  const giris=DB.get('giris').filter(r=>r.vardiya===CUR.vardiya);
+  const olcumler=DB.get('olcumler');
+  let html='';
+  for(let i=1;i<=10;i++){
+    const mn='Makine '+i;
+    const g=giris.find(r=>r.makine===mn);
+    const u=uretim.find(r=>r.makine===mn);
+    if(!g&&!u){html+=`<div class="mcard idle"><div class="mno">MAKİNE ${i}</div><div class="mprod">—</div><div class="mst" style="color:var(--muted)">● Veri yok</div></div>`;continue;}
+    const son=olcumler.filter(r=>r.vardiya===CUR.vardiya&&r.parca===(g?.parca||'')).reverse()[0];
+    const sonZaman=son?son.id:0;
+    const gecmis=Date.now()-sonZaman>3600000;
+    const hasNok=son&&son.nokCount>0;
+    const cls=hasNok?'nok':gecmis&&g?'warn':'ok';
+    const st=hasNok?'● NOK Ölçüm!':gecmis&&g?'● Ölçüm bekleniyor':'● Ölçüm OK';
+    html+=`<div class="mcard ${cls}"><div class="mno">MAKİNE ${i}${g?' | '+g.parca:''}</div>
+      <div class="mprod">${u?u.toplam+' adet':g?g.firma:'—'}</div>
+      <div class="mst">${st}</div></div>`;
+  }
+  grid.innerHTML=html;
+}
+
+// ============ BİLDİRİMLER ============
+function addNotif(type,msg,time){DB.push('notifications',{id:Date.now(),type,msg,time});}
+function renderNotifs(){
+  const data=DB.get('notifications').reverse();
+  const el=document.getElementById('notif-list');
+  if(!data.length){el.innerHTML='<div class="empty"><div class="eico">🔔</div>Bildirim yok</div>';return;}
+  el.innerHTML=data.slice(0,30).map(n=>`
+    <div class="notif ${n.type}">
+      <span class="ni">${n.type==='green'?'✅':n.type==='yellow'?'⚠️':'❌'}</span>
+      <div><div class="nm">${n.msg}</div><div class="nt">${n.time}</div></div>
+    </div>`).join('');
+}
+function renderKkOlcumler(){
+  const data=DB.get('olcumler').reverse();
+  const el=document.getElementById('kk-olcum-list');
+  if(!data.length){el.innerHTML='<div class="empty"><div class="eico">📐</div>Kayıt yok</div>';return;}
+  el.innerHTML=data.slice(0,30).map(r=>`
+    <div class="rec"><div class="rec-head">
+      <div><div class="rec-title">${r.parca} — ${r.olcumler.length} ölçüm</div>
+        <div class="rec-sub">${r.kullanici} | ${r.vardia||''} | ${r.tarih}</div></div>
+      <span class="badge ${r.nokCount>0?'br':'bg'}">${r.nokCount>0?r.nokCount+' NOK':'OK'}</span>
+    </div></div>`).join('');
+}
+
+// ============ HATA ============
+function handlePhoto(e){
+  Array.from(e.target.files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=ev=>{_hataPhotos.push(ev.target.result);renderPhotoPreview();};
+    r.readAsDataURL(f);
+  });
+}
+function renderPhotoPreview(){
+  document.getElementById('hata-photos').innerHTML=_hataPhotos.map((src,i)=>`
+    <div style="position:relative;width:68px;height:68px">
+      <img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+      <button onclick="_hataPhotos.splice(${i},1);renderPhotoPreview()" style="position:absolute;top:-5px;right:-5px;background:var(--red);border:none;border-radius:50%;width:18px;height:18px;color:#fff;font-size:10px;cursor:pointer">✕</button>
+    </div>`).join('');
+}
+function saveHata(){
+  const urun=document.getElementById('h-urun').value.trim();
+  if(!urun){toast('Ürün gerekli!','err');return;}
+  const no='HT-'+String(DB.get('hatalar').length+1).padStart(4,'0');
+  DB.push('hatalar',{id:Date.now(),tarih:now(),kullanici:CUR.name,vardiya:CUR.vardiya,
+    no,urun,makine:v('h-mak'),tip:v('h-tip'),sev:document.getElementById('h-sev').value,
+    adet:v('h-adet'),neden:v('h-neden'),onlem:v('h-onlem'),
+    durum:document.getElementById('h-durum').value,photos:[..._hataPhotos]});
+  addNotif('red',`🐛 ${no}: ${urun}${v('h-tip')?' — '+v('h-tip'):''}`,now());
+  clr(['h-urun','h-adet','h-neden','h-onlem']);
+  document.getElementById('h-mak').value='';document.getElementById('h-tip').value='';document.getElementById('h-durum').value='Açık';
+  _hataPhotos=[];renderPhotoPreview();
+  renderHataList();ytOzet();toast('🐛 Hata kaydedildi');
+}
+function renderHataList(){
+  const data=DB.get('hatalar').reverse();
+  const el=document.getElementById('hata-list');
+  if(!data.length){el.innerHTML='<div class="empty"><div class="eico">🐛</div>Kayıt yok</div>';return;}
+  el.innerHTML=data.slice(0,20).map(r=>`
+    <div class="rec"><div class="rec-head">
+      <div style="flex:1"><div class="rec-title">${r.no} — ${r.tip||'Diğer'}</div>
+        <div class="rec-sub">${r.urun} | ${r.makine||'—'} | ${r.sev} | ${r.tarih}</div>
+        ${r.neden?`<div class="rec-sub" style="color:var(--text);margin-top:2px">${r.neden.substring(0,70)}${r.neden.length>70?'...':''}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+        <span class="badge ${r.durum==='Kapalı'?'bg':r.durum==='Devam Ediyor'?'by':'br'}">${r.durum}</span>
+        ${r.photos&&r.photos.length?`<img src="${r.photos[0]}" style="width:48px;height:48px;object-fit:cover;border-radius:7px;border:1px solid var(--border)">`:''}
+      </div>
+    </div>
+    <div class="rec-acts">
+      <select class="rbtn" onchange="updHata(${r.id},this.value)" style="cursor:pointer">
+        <option ${r.durum==='Açık'?'selected':''} value="Açık">🔴 Açık</option>
+        <option ${r.durum==='Devam Ediyor'?'selected':''} value="Devam Ediyor">🟡 Devam</option>
+        <option ${r.durum==='Kapalı'?'selected':''} value="Kapalı">🟢 Kapalı</option>
+      </select>
+      <button class="rbtn del" onclick="askDel('hatalar',${r.id})">🗑 Sil</button>
+    </div></div>`).join('');
+}
+function updHata(id,durum){
+  const data=DB.get('hatalar');const idx=data.findIndex(r=>r.id===id);
+  if(idx>-1){data[idx].durum=durum;DB.set('hatalar',data);}
+  toast('✅ Güncellendi');
+}
+
+// ============ YÖNETİM ============
+function ytOzet(){
+  const uretim=DB.get('uretim');const hatalar=DB.get('hatalar');
+  const total=uretim.reduce((s,r)=>s+(parseInt(r.toplam)||0),0);
+  const fire=uretim.reduce((s,r)=>s+(parseInt(r.fire)||0),0);
+  const verim=total+fire>0?Math.round(total/(total+fire)*100):0;
+  const acik=hatalar.filter(r=>r.durum==='Açık').length;
+  document.getElementById('yt-total').textContent=total;
+  document.getElementById('yt-fire').textContent=fire;
+  document.getElementById('yt-verim').textContent=total>0?verim+'%':'—';
+  document.getElementById('yt-hata-count').textContent=acik;
+  // Chart
+  const slots=CUR.vLabel.includes('Gündüz')?SLOTS_G:SLOTS_N;
+  const tUr=uretim.filter(r=>r.gun===today());
+  const chartHtml=slots.map(s=>{
+    const g=tUr.reduce((a,r)=>a+(r.hourly&&r.hourly[s]?r.hourly[s]:0),0);
+    const h=tUr.reduce((a,r)=>a+(parseInt(r.hedef)||0),0);
+    const pct=h>0?Math.min(100,Math.round(g/h*100)):0;
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <div style="font-size:10px;color:var(--muted);width:78px;flex-shrink:0;font-family:'JetBrains Mono',monospace">${s}</div>
+      <div style="flex:1;background:var(--bg2);border-radius:20px;height:13px;overflow:hidden">
+        <div style="height:100%;border-radius:20px;background:${pct>=90?'var(--green)':pct>=70?'var(--yellow)':'var(--cyan)'};width:${pct}%;transition:width .5s"></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;width:34px;text-align:right;font-family:'JetBrains Mono',monospace">${g}</div>
+    </div>`;}).join('');
+  document.getElementById('yt-chart').innerHTML=chartHtml||'<div class="empty"><div class="eico">⏱</div>Veri yok</div>';
+  // Makine bazlı
+  const mb={};
+  tUr.forEach(r=>{if(!mb[r.makine])mb[r.makine]={t:0,f:0,h:0};mb[r.makine].t+=parseInt(r.toplam)||0;mb[r.makine].f+=parseInt(r.fire)||0;mb[r.makine].h+=parseInt(r.hedef)||0;});
+  const mhtml=Object.entries(mb).map(([m,d])=>{
+    const pct=d.h>0?Math.min(100,Math.round(d.t/d.h*100)):0;
+    return`<div class="rec" style="margin-bottom:6px"><div class="rec-head">
+      <div><div class="rec-title">${m}</div><div class="rec-sub">Toplam: ${d.t} | Fire: ${d.f} | Hedef: ${d.h}</div></div>
+      <span class="badge ${pct>=90?'bg':pct>=70?'by':'br'}">${d.h>0?pct+'%':'—'}</span>
+    </div>${d.h>0?`<div class="prog" style="margin-top:6px"><div class="prog-fill" style="width:${pct}%;background:${pct>=90?'var(--green)':pct>=70?'var(--yellow)':'var(--red)'}"></div></div>`:''}</div>`;}).join('');
+  document.getElementById('yt-mak-prod').innerHTML=mhtml||'<div class="empty"><div class="eico">🏭</div>Bugün üretim verisi yok</div>';
+}
+function calcSevk(){
+  const adet=parseInt(document.getElementById('sv-adet').value)||0;
+  const mevcut=parseInt(document.getElementById('sv-mevcut').value)||0;
+  const wrap=document.getElementById('sv-prog-wrap');
+  if(adet>0){
+    const pct=Math.min(100,Math.round(mevcut/adet*100));
+    document.getElementById('sv-pct').textContent=pct+'%';
+    document.getElementById('sv-prog').style.width=pct+'%';
+    document.getElementById('sv-prog').style.background=pct>=100?'var(--green)':pct>=60?'var(--yellow)':'var(--cyan)';
+    wrap.style.display='block';
+  } else wrap.style.display='none';
+}
+function saveSevk(){
+  const urun=document.getElementById('sv-urun').value.trim();
+  if(!urun){toast('Ürün kodu gerekli!','err');return;}
+  DB.push('sevkiyat',{id:Date.now(),tarih:now(),kullanici:CUR.name,
+    urun,firma:v('sv-firma'),planTarih:v('sv-tarih'),
+    adet:parseInt(v('sv-adet'))||0,mevcut:parseInt(v('sv-mevcut'))||0,
+    durum:document.getElementById('sv-durum').value});
+  clr(['sv-urun','sv-firma','sv-adet','sv-mevcut']);
+  document.getElementById('sv-durum').value='Aktif';
+  document.getElementById('sv-prog-wrap').style.display='none';
+  renderSevkList();toast('✅ Sevkiyat eklendi');
+}
+function renderSevkList(){
+  const data=DB.get('sevkiyat').reverse();
+  const el=document.getElementById('sevk-list');
+  if(!data.length){el.innerHTML='<div class="empty"><div class="eico">🚚</div>Sevkiyat yok</div>';return;}
+  el.innerHTML=data.map(r=>{
+    const pct=r.adet>0?Math.min(100,Math.round(r.mevcut/r.adet*100)):0;
+    return`<div class="sevk-row"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <div><div style="font-weight:700;font-size:13px">${r.urun} — ${r.firma||'—'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">📅 ${r.planTarih||'—'} | ${r.mevcut||0}/${r.adet||0} adet</div></div>
+      <span class="badge ${r.durum==='Tamamlandı'?'bg':r.durum==='Aktif'?'bc':r.durum==='İptal'?'br':'by'}">${r.durum}</span>
+    </div>
+    ${r.adet>0?`<div class="prog"><div class="prog-fill" style="width:${pct}%;background:${pct>=100?'var(--green)':pct>=60?'var(--yellow)':'var(--cyan)'}"></div></div>`:''}
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <select class="rbtn" onchange="updSevk(${r.id},this.value)" style="cursor:pointer">
+        <option ${r.durum==='Aktif'?'selected':''} value="Aktif">🟢 Aktif</option>
+        <option ${r.durum==='Beklemede'?'selected':''} value="Beklemede">🟡 Beklemede</option>
+        <option ${r.durum==='Tamamlandı'?'selected':''} value="Tamamlandı">✅ Tamamlandı</option>
+        <option ${r.durum==='İptal'?'selected':''} value="İptal">❌ İptal</option>
+      </select>
+      <button class="rbtn del" onclick="askDel('sevkiyat',${r.id})">🗑 Sil</button>
+    </div></div>`;}).join('');
+}
+function updSevk(id,durum){
+  const data=DB.get('sevkiyat');const idx=data.findIndex(r=>r.id===id);
+  if(idx>-1){data[idx].durum=durum;DB.set('sevkiyat',data);}
+  toast('✅ Güncellendi');
+}
+function renderSorunlu(){
+  const giris=DB.get('giris').filter(r=>r.durus&&r.durus!=='Yok').reverse();
+  const hatalar=DB.get('hatalar').filter(r=>r.durum==='Açık');
+  const sel=document.getElementById('sorunlu-list');
+  const hel=document.getElementById('yt-hata-list');
+  sel.innerHTML=giris.length?giris.slice(0,10).map(r=>`
+    <div class="rec"><div class="rec-head">
+      <div><div class="rec-title">${r.makine} — ${r.firma||'—'}</div>
+        <div class="rec-sub">Duruş: ${r.durus} | ${r.kullanici} | ${r.tarih}</div></div>
+      <span class="badge bo">${r.durus}</span>
+    </div></div>`).join(''):'<div class="empty"><div class="eico">✅</div>Duruş yok</div>';
+  hel.innerHTML=hatalar.length?hatalar.slice(0,10).map(r=>`
+    <div class="rec"><div class="rec-head">
+      <div><div class="rec-title">${r.no} — ${r.tip||'Diğer'}</div>
+        <div class="rec-sub">${r.urun} | ${r.makine||'—'} | ${r.sev}</div></div>
+      <span class="badge br">Açık</span>
+    </div></div>`).join(''):'<div class="empty"><div class="eico">✅</div>Açık hata yok</div>';
+}
+
+// ============ SİL ============
+function askDel(type,id){_delType=type;_delId=id;document.getElementById('delModal').classList.add('show');}
+function confirmDel(){
+  DB.del(_delType,_delId);
+  document.getElementById('delModal').classList.remove('show');
+  renderOpAll();renderOlcGecmis();renderHataList();renderSevkList();ytOzet();
+  toast('🗑 Silindi');
+}
+
+// ============ CSV ============
+function exportCSV(type){
+  const data=DB.get(type);
+  if(!data.length){toast('Veri yok!','err');return;}
+  const clean=data.map(r=>{const c={...r};delete c.photos;delete c.hourly;return c;});
+  const keys=Object.keys(clean[0]);
+  const csv='\uFEFF'+keys.join(';')+'\n'+clean.map(r=>keys.map(k=>`"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`UretimTakip_${type}_${today()}.csv`;a.click();
+  URL.revokeObjectURL(url);toast('📥 İndirildi');
+}
+function clearAll(){
+  if(!confirm('Tüm veriler silinecek!'))return;
+  ['giris','olcumler','uretim','hatalar','sevkiyat','notifications'].forEach(k=>localStorage.removeItem(k));
+  toast('🗑 Temizlendi');
+}
+
+// ============ UTILS ============
+function v(id){return document.getElementById(id)?.value||'';}
+function clr(ids){ids.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';})}
+function now(){return new Date().toLocaleString('tr-TR');}
+function today(){return new Date().toISOString().split('T')[0];}
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+type+' show';
+  setTimeout(()=>t.className='toast',2800);
+}
+
+// PWA
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script>
+</body>
+</html>
